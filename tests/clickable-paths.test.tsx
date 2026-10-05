@@ -31,6 +31,20 @@ test('existing links, fenced code and non-paths stay as written', () => {
   expect(linkify(text, resolve)).toBe(text)
 })
 
+test('existing links to files become file links; web links and anchors stay', () => {
+  const found = (p: string) => (p.startsWith('/') ? p : p === 'README.md' ? '/repo/README.md' : undefined)
+  expect(linkify('[guide](README.md#install), [abs](/repo/a%20b.md), [web](https://goduke.com), [top](#top)', found)).toBe(
+    '[guide](file:///repo/README.md), [abs](file:///repo/a%20b.md), [web](https://goduke.com), [top](#top)',
+  )
+})
+
+test('a lone file name links in backticks only', () => {
+  const found = (p: string) => (p === 'roster.json' ? '/repo/roster.json' : undefined)
+  expect(linkify('`roster.json` and roster.json and `Node.js`', found)).toBe(
+    '[`roster.json`](file:///repo/roster.json) and roster.json and `Node.js`',
+  )
+})
+
 test('a relative path links only when the resolver finds it', () => {
   const found = (p: string) => (p === 'src/roster.ts' ? '/repo/src/roster.ts' : undefined)
   expect(linkify('`src/roster.ts` and `src/missing.ts`', found)).toBe(
@@ -70,7 +84,7 @@ test('clicking a file link opens the file instead of revealing it', async ($, on
     return { value: { exitCode: 0, stdout: e.argv[0] === 'uname' ? 'Darwin\n' : '', stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
   })
   const ui = await $.ui.mount({ ...REPLY, surface: 'terminal' })
-  await ui.press({ key: 'reply-msg-1', link: { href: 'file:///Users/coach-k/notes/game.md' } })
+  await ui.press({ key: 'links-msg-1', link: { href: 'file:///Users/coach-k/notes/game.md' } })
   expect(runs).toContainEqual(['open', '/Users/coach-k/notes/game.md'])
   await ui.unmount()
 })
@@ -86,5 +100,31 @@ test('elsewhere the reply keeps the built-in drawing with the rewritten text', a
   })
   const ui = await $.ui.mount({ ...REPLY, surface: 'desktop' })
   expect(drawn).toBe(LINKED)
+  await ui.unmount()
+})
+
+test('an existing file link is clickable even when nothing is rewritten', async ($, on) => {
+  session(on)
+  const ui = await $.ui.mount({
+    ...REPLY,
+    surface: 'terminal',
+    props: { text: 'See [notes](file:///Users/coach-k/notes.md).', isFirstOfReply: false },
+  })
+  expect((await ui.find({ type: 'Markdown' }))?.props).toMatchObject({ pressableLinks: ['file:///Users/coach-k/notes.md'] })
+  await ui.unmount()
+})
+
+test('slash command output gets clickable file links too', async ($, on) => {
+  session(on)
+  const ui = await $.ui.mount({
+    plugin: 'clickable-paths',
+    surface: 'terminal',
+    component: 'CommandOutput',
+    requestId: 'cmd-1',
+    props: { command: 'roster', args: '', text: 'Saved to `~/notes/game.md`', isErrored: false },
+  })
+  expect((await ui.find({ type: 'Markdown' }))?.props).toMatchObject({
+    text: 'Saved to [`~/notes/game.md`](file:///Users/coach-k/notes/game.md)',
+  })
   await ui.unmount()
 })

@@ -43,33 +43,43 @@ async function openFile($: EngineInterface, href: string) {
   if (!ran || ran.exitCode !== 0) $.ui.toast(`Couldn't open ${path}`)
 }
 
-export const register: Register = on => {
-  on('ui.render', { component: 'AssistantMessage' }, async ($, e: any, next) => {
-    const text: string = e.props.text
-    const out = await rewrite($, text)
-    if (out === text) return next(e)
+function fileLinks(markdown: string): string[] {
+  return [...new Set([...markdown.matchAll(FILE_LINK)].map(m => m[1]!))]
+}
 
-    const files = [...new Set([...out.matchAll(FILE_LINK)].map(m => m[1]!))]
-    // A click on a file link only reaches the mod where the terminal reports clicks.
-    if (e.surface !== 'terminal' || files.length === 0 || out.length > MARKDOWN_LIMIT || files.length > PRESSABLE_LIMIT) {
-      return next({ ...e, props: { ...e.props, text: out } })
-    }
+// Draws the text with clickable file links: the mod's own Markdown in the terminal,
+// where it can answer clicks, else Claude Code's drawing with the rewritten text.
+async function render($: EngineInterface, e: any, next: any, gutter: { text: string; isDim: boolean }) {
+  const text: string = e.props.text
+  const out = await rewrite($, text)
+  const files = fileLinks(out)
+  if (e.surface !== 'terminal' || files.length === 0 || out.length > MARKDOWN_LIMIT || files.length > PRESSABLE_LIMIT) {
+    return out === text ? next(e) : next({ ...e, props: { ...e.props, text: out } })
+  }
 
-    const { Box, Text, Markdown } = $.ui.resolve(e)
-    return (
-      <Box flexDirection="row">
-        <Box width={2} flexShrink={0}>
-          <Text>{e.props.isFirstOfReply ? '●' : ' '}</Text>
-        </Box>
-        <Box flexDirection="column" flexGrow={1} flexShrink={1}>
-          <Markdown
-            key={`reply-${e.requestId}`}
-            text={out}
-            pressableLinks={files}
-            onLinkPress={(link: { href: string }) => void openFile($, link.href)}
-          />
-        </Box>
+  const { Box, Text, Markdown } = $.ui.resolve(e)
+  return (
+    <Box flexDirection="row">
+      <Box width={gutter.text.length} flexShrink={0}>
+        <Text dimColor={gutter.isDim}>{gutter.text}</Text>
       </Box>
-    )
-  })
+      <Box flexDirection="column" flexGrow={1} flexShrink={1}>
+        <Markdown
+          key={`links-${e.requestId}`}
+          text={out}
+          dimColor={gutter.isDim}
+          pressableLinks={files}
+          onLinkPress={(link: { href: string }) => void openFile($, link.href)}
+        />
+      </Box>
+    </Box>
+  )
+}
+
+export const register: Register = on => {
+  on('ui.render', { component: 'AssistantMessage' }, async ($, e: any, next) =>
+    render($, e, next, { text: e.props.isFirstOfReply ? '● ' : '  ', isDim: false }))
+
+  on('ui.render', { component: 'CommandOutput' }, async ($, e: any, next) =>
+    e.props.isErrored ? next(e) : render($, e, next, { text: '  ⎿  ', isDim: true }))
 }
