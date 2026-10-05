@@ -1,16 +1,16 @@
-# Claude Clickable Links
+# Claude Clickable Paths
 
 A Claude Code mod that makes the file paths in Claude's replies clickable, including the ones Claude wraps in backticks, and opens them in their default app.
 
-[![License](https://img.shields.io/github/license/ellenrchen/claude-clickable-links)](LICENSE)
+[![License](https://img.shields.io/github/license/ellenrchen/claude-clickable-paths)](LICENSE)
 
 ## Install
 
 Inside Claude Code, run:
 
 ```
-/plugin marketplace add ellenrchen/claude-clickable-links
-/plugin install clickable-links
+/plugin marketplace add ellenrchen/claude-clickable-paths
+/plugin install clickable-paths
 /reload-plugins
 ```
 
@@ -20,8 +20,8 @@ That's it. The next reply that mentions a file shows it as a link.
 <summary><strong>Prefer the terminal?</strong></summary>
 
 ```bash
-claude plugin marketplace add ellenrchen/claude-clickable-links
-claude plugin install clickable-links@claude-clickable-links
+claude plugin marketplace add ellenrchen/claude-clickable-paths
+claude plugin install clickable-paths@claude-clickable-paths
 ```
 
 Then run `/reload-plugins` inside a session, or start a new one.
@@ -48,7 +48,7 @@ With the mod, both are links. In the fullscreen terminal, a plain click opens th
 
 ## How It Works
 
-Claude Clickable Links is a [mod](https://code.claude.com/docs/en/plugins/mods/overview):
+Claude Clickable Paths is a [mod](https://code.claude.com/docs/en/plugins/mods/overview):
 
 1. It hooks `ui.render` for `AssistantMessage`, the row that draws each text block of Claude's reply.
 2. It rewrites the block's Markdown, turning each path into a `file://` Markdown link.
@@ -59,7 +59,7 @@ Results are cached per block, so redraws stay cheap.
 
 ## Security
 
-Claude Clickable Links is local-only. It makes no network requests and writes no files. It reads `HOME` and the session's working directory, and checks whether relative paths exist. It runs `uname` once, and runs `open` or `xdg-open` on a file only when you click its link.
+Claude Clickable Paths is local-only. It makes no network requests and writes no files. It reads `HOME` and the session's working directory, and checks whether relative paths exist. It runs `uname` once, and runs `open` or `xdg-open` on a file only when you click its link.
 
 Run `claude plugin validate` on the repo to see every event it hooks and every call it makes.
 
@@ -77,8 +77,8 @@ Run `claude plugin validate` on the repo to see every event it hooks and every c
 ## Development
 
 ```bash
-git clone https://github.com/ellenrchen/claude-clickable-links
-cd claude-clickable-links
+git clone https://github.com/ellenrchen/claude-clickable-paths
+cd claude-clickable-paths
 
 # Load it for one session without installing
 claude --plugin-dir .
