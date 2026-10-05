@@ -1,6 +1,6 @@
 {
   "name": "clickable-links",
-  "description": "Make file paths and URLs in Claude's replies clickable, even inside backticks",
+  "description": "Make file paths in Claude's replies clickable, opening the file in its default app",
   "version": "0.1.0",
   "author": {
     "name": "Ellen Chen",
@@ -9,5 +9,5 @@
   "homepage": "https://github.com/ellenrchen/claude-clickable-links",
   "repository": "https://github.com/ellenrchen/claude-clickable-links",
   "license": "MIT",
-  "keywords": ["links", "paths", "urls", "hyperlinks", "mod", "terminal", "claude-code"]
+  "keywords": ["links", "paths", "files", "hyperlinks", "mod", "terminal", "claude-code"]
 }
