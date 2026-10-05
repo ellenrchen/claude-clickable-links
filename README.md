@@ -1,6 +1,6 @@
 # Claude Clickable Links
 
-A Claude Code mod that makes the file paths and URLs in Claude's replies clickable, including the ones Claude wraps in backticks.
+A Claude Code mod that makes the file paths in Claude's replies clickable, including the ones Claude wraps in backticks, and opens them in their default app.
 
 [![License](https://img.shields.io/github/license/ellenrchen/claude-clickable-links)](LICENSE)
 
@@ -14,7 +14,7 @@ Inside Claude Code, run:
 /reload-plugins
 ```
 
-That's it. The next reply that mentions a file or a URL shows it as a link.
+That's it. The next reply that mentions a file shows it as a link.
 
 <details>
 <summary><strong>Prefer the terminal?</strong></summary>
@@ -37,13 +37,13 @@ Claude often writes paths as inline code, which the terminal draws as plain text
   in `src/server/routes.ts:42`.
 ```
 
-With the mod, both are links. In the fullscreen terminal, a plain click on a file opens it in its default app (not Finder); elsewhere, Cmd-click or Ctrl-click opens links as your terminal does:
+With the mod, both are links. In the fullscreen terminal, a plain click opens the file in its default app (not Finder); elsewhere, Cmd-click or Ctrl-click opens it as your terminal does:
 
 - **Paths in backticks link and keep their code styling.**
 - **Bare paths link too**: absolute paths and `~/` paths, without any trailing punctuation.
 - **Relative paths link only when the file exists**, resolved against the session's working directory, so prose like `and/or` never turns into a link.
 - **A `:line` suffix stays in the text.** The link opens the file itself; `file://` links can't carry a line number.
-- **URLs link** whether bare or in backticks.
+- **URLs are left alone**, since Claude Code already makes them clickable.
 - **Code blocks and existing links stay as written.**
 
 ## How It Works
@@ -51,7 +51,7 @@ With the mod, both are links. In the fullscreen terminal, a plain click on a fil
 Claude Clickable Links is a [mod](https://code.claude.com/docs/en/plugins/mods/overview):
 
 1. It hooks `ui.render` for `AssistantMessage`, the row that draws each text block of Claude's reply.
-2. It rewrites the block's Markdown, turning each path or URL into a Markdown link (`file://` for paths).
+2. It rewrites the block's Markdown, turning each path into a `file://` Markdown link.
 3. In the terminal, it draws the block itself with Claude Code's `Markdown` element and answers clicks on file links by running `open` (macOS) or `xdg-open` (Linux), so the file opens in its default app. Elsewhere, or when a block has no file links, it hands the rewritten text to Claude Code's own renderer.
 4. It only changes the drawing. The stored conversation, and what Claude reads, stay as they were.
 

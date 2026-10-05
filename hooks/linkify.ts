@@ -1,4 +1,4 @@
-// Turns paths and URLs in markdown into links, leaving fences and existing links alone.
+// Turns file paths in markdown into links, leaving fences and existing links alone.
 
 export type Resolve = (path: string) => string | undefined
 
@@ -8,12 +8,11 @@ const TOKEN = new RegExp(
     String.raw`!?\[[^\]\n]*\]\([^)\n]*\)`, // existing link or image
     String.raw`<[a-z]+:[^>\s]+>`, // autolink
     String.raw`(\x60+)([^\x60\n]+?)\1(?!\x60)`, // code span: groups 1, 2
-    String.raw`https?://[^\s<>()\[\]\x60"']+`, // bare URL
+    String.raw`[a-z][\w+.-]*://[^\s<>()\[\]\x60"']+`, // URL, left as is
     String.raw`(?<![\w/.~\-])(?:${PATH})(?::\d+(?::\d+)?)?`, // bare path
   ].join('|'),
   'g',
 )
-const WHOLE_URL = /^https?:\/\/\S+$/
 const WHOLE_PATH = new RegExp(String.raw`^(${PATH})(?::(\d+)(?::\d+)?)?$`)
 const TRAILING = /[.,;:!?)'"]+$/
 
@@ -21,9 +20,8 @@ function fileHref(abs: string): string {
   return 'file://' + encodeURI(abs).replace(/[?#]/g, encodeURIComponent)
 }
 
-// The href for a path or URL, or undefined when it shouldn't link.
+// The href for a path, or undefined when it shouldn't link.
 function hrefFor(target: string, resolve: Resolve): string | undefined {
-  if (WHOLE_URL.test(target)) return target
   const m = WHOLE_PATH.exec(target)
   if (!m) return undefined
   const abs = resolve(m[1]!)
@@ -32,7 +30,7 @@ function hrefFor(target: string, resolve: Resolve): string | undefined {
 
 function linkifyProse(text: string, resolve: Resolve): string {
   return text.replace(TOKEN, (match, ticks: string | undefined, inner: string | undefined) => {
-    if (match.startsWith('[') || match.startsWith('![') || match.startsWith('<')) return match
+    if (match.startsWith('[') || match.startsWith('![') || match.startsWith('<') || match.includes('://')) return match
     if (ticks !== undefined) {
       const href = hrefFor(inner!.trim(), resolve)
       return href ? `[${match}](${href})` : match

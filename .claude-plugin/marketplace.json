@@ -8,12 +8,12 @@
     {
       "name": "clickable-links",
       "source": "./",
-      "description": "Make file paths and URLs in Claude's replies clickable, even inside backticks",
+      "description": "Make file paths in Claude's replies clickable, opening the file in its default app",
       "category": "productivity",
-      "tags": ["links", "paths", "urls", "hyperlinks", "mod", "terminal"]
+      "tags": ["links", "paths", "files", "hyperlinks", "mod", "terminal"]
     }
   ],
   "metadata": {
-    "description": "Make file paths and URLs in Claude's replies clickable"
+    "description": "Make file paths in Claude's replies clickable"
   }
 }

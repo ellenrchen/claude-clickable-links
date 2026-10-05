@@ -21,10 +21,9 @@ test('a home path expands and a line suffix stays in the label only', () => {
   expect(linkify('`~/duke/plays.ts:23`', resolve)).toBe('[`~/duke/plays.ts:23`](file:///Users/coach-k/duke/plays.ts)')
 })
 
-test('URLs link, bare or in backticks', () => {
-  expect(linkify('at https://goduke.com/roster. and `https://goduke.com`', resolve)).toBe(
-    'at [https://goduke.com/roster](https://goduke.com/roster). and [`https://goduke.com`](https://goduke.com)',
-  )
+test('URLs stay as written, including the path inside them', () => {
+  const text = 'at https://goduke.com/Users/coach-k/roster.md and `https://goduke.com`'
+  expect(linkify(text, resolve)).toBe(text)
 })
 
 test('existing links, fenced code and non-paths stay as written', () => {
@@ -68,7 +67,7 @@ test('clicking a file link opens the file instead of revealing it', async ($, on
   const runs: string[][] = []
   on('process.run', (_t$: unknown, e: any) => {
     runs.push([...e.argv])
-    return { value: { exitCode: 0, stdout: e.argv[0] === 'uname' ? 'Darwin\n' : '', stderr: '' } }
+    return { value: { exitCode: 0, stdout: e.argv[0] === 'uname' ? 'Darwin\n' : '', stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
   })
   const ui = await $.ui.mount({ ...REPLY, surface: 'terminal' })
   await ui.press({ key: 'reply-msg-1', link: { href: 'file:///Users/coach-k/notes/game.md' } })
