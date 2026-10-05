@@ -37,7 +37,7 @@ Claude often writes paths as inline code, which the terminal draws as plain text
   in `src/server/routes.ts:42`.
 ```
 
-With the mod, both are links. Cmd-click (or Ctrl-click, depending on your terminal) opens them:
+With the mod, both are links. In the fullscreen terminal, a plain click on a file opens it in its default app (not Finder); elsewhere, Cmd-click or Ctrl-click opens links as your terminal does:
 
 - **Paths in backticks link and keep their code styling.**
 - **Bare paths link too**: absolute paths and `~/` paths, without any trailing punctuation.
@@ -51,14 +51,15 @@ With the mod, both are links. Cmd-click (or Ctrl-click, depending on your termin
 Claude Clickable Links is a [mod](https://code.claude.com/docs/en/plugins/mods/overview):
 
 1. It hooks `ui.render` for `AssistantMessage`, the row that draws each text block of Claude's reply.
-2. It rewrites the block's Markdown, turning each path or URL into a Markdown link (`file://` for paths), and hands the result to Claude Code's own renderer, which draws it as a terminal hyperlink.
-3. It only changes the drawing. The stored conversation, and what Claude reads, stay as they were.
+2. It rewrites the block's Markdown, turning each path or URL into a Markdown link (`file://` for paths).
+3. In the terminal, it draws the block itself with Claude Code's `Markdown` element and answers clicks on file links by running `open` (macOS) or `xdg-open` (Linux), so the file opens in its default app. Elsewhere, or when a block has no file links, it hands the rewritten text to Claude Code's own renderer.
+4. It only changes the drawing. The stored conversation, and what Claude reads, stay as they were.
 
 Results are cached per block, so redraws stay cheap.
 
 ## Security
 
-Claude Clickable Links is local-only. It makes no network requests and writes no files. It reads `HOME` and the session's working directory, and checks whether relative paths exist. It never opens anything itself; your terminal opens a link only when you click it.
+Claude Clickable Links is local-only. It makes no network requests and writes no files. It reads `HOME` and the session's working directory, and checks whether relative paths exist. It runs `uname` once, and runs `open` or `xdg-open` on a file only when you click its link.
 
 Run `claude plugin validate` on the repo to see every event it hooks and every call it makes.
 

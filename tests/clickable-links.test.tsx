@@ -39,10 +39,45 @@ test('a relative path links only when the resolver finds it', () => {
   )
 })
 
-test('the reply row draws with links, relative to the session folder', async ($, on) => {
+const REPLY = {
+  plugin: 'clickable-links',
+  component: 'AssistantMessage',
+  requestId: 'msg-1',
+  props: { text: 'Edited `src/roster.ts` and `~/notes/game.md`.', isFirstOfReply: true },
+} as const
+const LINKED =
+  'Edited [`src/roster.ts`](file:///repo/src/roster.ts) and [`~/notes/game.md`](file:///Users/coach-k/notes/game.md).'
+
+function session(on: any) {
   on('env.get', () => ({ value: HOME }))
   on('session.cwd', () => ({ value: '/repo' }))
-  on('fs.exists', (_t$, e: any) => ({ value: e.path === '/repo/src/roster.ts' }))
+  on('fs.exists', (_t$: unknown, e: any) => ({ value: e.path === '/repo/src/roster.ts' }))
+}
+
+test('in the terminal the reply draws as a Markdown of its own with file links', async ($, on) => {
+  session(on)
+  const ui = await $.ui.mount({ ...REPLY, surface: 'terminal' })
+  const md = await ui.find({ type: 'Markdown' })
+  expect(md?.props).toMatchObject({ text: LINKED })
+  expect(await ui.find({ type: 'Text', text: '●' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('clicking a file link opens the file instead of revealing it', async ($, on) => {
+  session(on)
+  const runs: string[][] = []
+  on('process.run', (_t$: unknown, e: any) => {
+    runs.push([...e.argv])
+    return { value: { exitCode: 0, stdout: e.argv[0] === 'uname' ? 'Darwin\n' : '', stderr: '' } }
+  })
+  const ui = await $.ui.mount({ ...REPLY, surface: 'terminal' })
+  await ui.press({ key: 'reply-msg-1', link: { href: 'file:///Users/coach-k/notes/game.md' } })
+  expect(runs).toContainEqual(['open', '/Users/coach-k/notes/game.md'])
+  await ui.unmount()
+})
+
+test('elsewhere the reply keeps the built-in drawing with the rewritten text', async ($, on) => {
+  session(on)
   let drawn: string | undefined
   // Stands in for Claude Code's own drawing, which gets the rewritten text
   on('ui.render', { component: 'AssistantMessage' }, async (t$, e: any) => {
@@ -50,15 +85,7 @@ test('the reply row draws with links, relative to the session folder', async ($,
     const { Text } = t$.ui.resolve(e)
     return <Text>{e.props.text}</Text>
   })
-
-  const ui = await $.ui.mount({
-    plugin: 'clickable-links',
-    surface: 'terminal',
-    component: 'AssistantMessage',
-    props: { text: 'Edited `src/roster.ts` and `~/notes/game.md`.', isFirstOfReply: true },
-  })
-  expect(drawn).toBe(
-    'Edited [`src/roster.ts`](file:///repo/src/roster.ts) and [`~/notes/game.md`](file:///Users/coach-k/notes/game.md).',
-  )
+  const ui = await $.ui.mount({ ...REPLY, surface: 'desktop' })
+  expect(drawn).toBe(LINKED)
   await ui.unmount()
 })
