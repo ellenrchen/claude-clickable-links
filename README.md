@@ -4,6 +4,12 @@ A Claude Code mod that makes the file paths in Claude's replies clickable, inclu
 
 [![License](https://img.shields.io/github/license/ellenrchen/claude-clickable-paths)](LICENSE)
 
+
+
+https://github.com/user-attachments/assets/4f1d2dbb-fdcf-47c8-a45f-24b645c68a01
+
+
+
 ## Install
 
 Inside Claude Code, run:
