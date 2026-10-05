@@ -1,0 +1,19 @@
+{
+  "name": "claude-clickable-links",
+  "owner": {
+    "name": "Ellen Chen",
+    "url": "https://github.com/ellenrchen"
+  },
+  "plugins": [
+    {
+      "name": "clickable-links",
+      "source": "./",
+      "description": "Make file paths and URLs in Claude's replies clickable, even inside backticks",
+      "category": "productivity",
+      "tags": ["links", "paths", "urls", "hyperlinks", "mod", "terminal"]
+    }
+  ],
+  "metadata": {
+    "description": "Make file paths and URLs in Claude's replies clickable"
+  }
+}
