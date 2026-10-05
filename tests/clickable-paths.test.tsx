@@ -39,7 +39,7 @@ test('a relative path links only when the resolver finds it', () => {
 })
 
 const REPLY = {
-  plugin: 'clickable-links',
+  plugin: 'clickable-paths',
   component: 'AssistantMessage',
   requestId: 'msg-1',
   props: { text: 'Edited `src/roster.ts` and `~/notes/game.md`.', isFirstOfReply: true },

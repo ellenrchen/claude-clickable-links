@@ -1,12 +1,12 @@
 {
-  "name": "claude-clickable-links",
+  "name": "claude-clickable-paths",
   "owner": {
     "name": "Ellen Chen",
     "url": "https://github.com/ellenrchen"
   },
   "plugins": [
     {
-      "name": "clickable-links",
+      "name": "clickable-paths",
       "source": "./",
       "description": "Make file paths in Claude's replies clickable, opening the file in its default app",
       "category": "productivity",
