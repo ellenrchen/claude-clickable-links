@@ -41,17 +41,20 @@ With the mod, both are links. In the fullscreen terminal, a plain click opens th
 
 - **Paths in backticks link and keep their code styling.**
 - **Bare paths link too**: absolute paths and `~/` paths, without any trailing punctuation.
+- **Existing links to files open the file too**, whether written as `file://`, an absolute path, or a relative path like `[guide](README.md)`.
+- **A lone file name in backticks**, like `` `package.json` ``, links when that file exists in the working directory.
 - **Relative paths link only when the file exists**, resolved against the session's working directory, so prose like `and/or` never turns into a link.
 - **A `:line` suffix stays in the text.** The link opens the file itself; `file://` links can't carry a line number.
 - **URLs are left alone**, since Claude Code already makes them clickable.
+- **Slash command output** gets the same treatment as Claude's replies.
 - **Code blocks and existing links stay as written.**
 
 ## How It Works
 
 Claude Clickable Paths is a [mod](https://code.claude.com/docs/en/plugins/mods/overview):
 
-1. It hooks `ui.render` for `AssistantMessage`, the row that draws each text block of Claude's reply.
-2. It rewrites the block's Markdown, turning each path into a `file://` Markdown link.
+1. It hooks `ui.render` for `AssistantMessage`, the row that draws each text block of Claude's reply, and `CommandOutput`, the row a slash command prints.
+2. It rewrites the block's Markdown, turning each path, and each existing link that points at a file, into a `file://` Markdown link.
 3. In the terminal, it draws the block itself with Claude Code's `Markdown` element and answers clicks on file links by running `open` (macOS) or `xdg-open` (Linux), so the file opens in its default app. Elsewhere, or when a block has no file links, it hands the rewritten text to Claude Code's own renderer.
 4. It only changes the drawing. The stored conversation, and what Claude reads, stay as they were.
 
@@ -72,7 +75,7 @@ Run `claude plugin validate` on the repo to see every event it hooks and every c
 ## Limitations
 
 - Paths containing spaces aren't linked.
-- Only Claude's reply text is rewritten, not tool output or your own prompts.
+- Tool rows (such as `Read(...)`) and your own prompts aren't linked: Claude Code draws them from fixed data or plain text, so a mod can't add links without redrawing the whole row.
 
 ## Development
 
